@@ -116,10 +116,11 @@ export default function QuizIAFree({ setIsAuth }) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-100 p-8 flex flex-col items-center pt-[80px]">
+    <div className="min-h-screen bg-white dark:bg-slate-900 text-slate-900 dark:text-white p-8 flex flex-col items-center pt-[80px]"
+    >
          
       <motion.h1
-        className="text-4xl md:text-5xl font-extrabold text-indigo-700 mb-10 flex items-center gap-3"
+        className="text-4xl md:text-5xl font-extrabold text-black dark:text-white mb-10 flex items-center gap-3"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
       >
@@ -137,15 +138,15 @@ export default function QuizIAFree({ setIsAuth }) {
           {cours.map((c) => (
             <motion.div
               key={c.id}
-              className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-2xl transition-all flex flex-col justify-between"
+             className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-2xl shadow-lg p-6 hover:shadow-2xl transition-all flex flex-col justify-between"
               whileHover={{ scale: 1.02 }}
             >
               <div>
-                <h2 className="text-xl font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                <h2 className="text-xl font-semibold  mb-2 flex items-center gap-2">
                   <BookOpen className="text-indigo-500" />
                   {c.titre}
                 </h2>
-                <p className="text-sm text-gray-600 mb-3 line-clamp-2">
+                <p className="text-sm mb-3 line-clamp-2">
                   {c.description || "Aucune description."}
                 </p>
               </div>
@@ -176,11 +177,11 @@ export default function QuizIAFree({ setIsAuth }) {
       {quiz.length > 0 && !finished && (
         <motion.div
           key={current}
-          className="bg-white shadow-2xl rounded-3xl p-10 mt-6 max-w-3xl w-full text-center"
+          className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-2xl shadow-lg p-6 hover:shadow-2xl transition-all flex flex-col justify-between"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <h2 className="text-2xl font-bold text-gray-800 mb-6">{quiz[current].question}</h2>
+          <h2 className="text-2xl font-bold  mb-6">{quiz[current].question}</h2>
 
           {quiz[current].options?.length > 0 && quiz[current].options[0] !== "..." ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -213,7 +214,7 @@ export default function QuizIAFree({ setIsAuth }) {
             </div>
           )}
 
-          <p className="mt-6 text-gray-600">
+          <p className="mt-6 ">
             Question {current + 1} / {quiz.length}
           </p>
         </motion.div>
@@ -221,14 +222,14 @@ export default function QuizIAFree({ setIsAuth }) {
 
       {/* Quiz terminé avec corrections */}
       {finished && (
-        <motion.div
-          className="mt-10 bg-white p-10 rounded-3xl shadow-2xl max-w-3xl w-full"
+       <motion.div
+  className="mt-10 bg-white dark:bg-slate-900 p-10 rounded-3xl shadow-2xl max-w-3xl w-full text-black dark:text-white"
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
         >
           <CheckCircle className="w-14 h-14 text-green-500 mx-auto mb-4" />
-          <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center">Quiz terminé !</h2>
-          <p className="text-xl text-gray-600 mb-6 text-center">
+          <h2 className="text-3xl font-bold text-black dark:text-white mb-6 text-center">Quiz terminé !</h2>
+          <p className="text-xl  mb-6 text-center">
             Votre score : <span className="font-semibold text-indigo-600">{score} / {quiz.length}</span>
           </p>
 
@@ -239,7 +240,7 @@ export default function QuizIAFree({ setIsAuth }) {
               const isCorrect = userAnswer.trim().toLowerCase() === q.answer.trim().toLowerCase();
 
               return (
-                <div key={i} className="mb-4 p-4 bg-gray-50 rounded-lg shadow-sm">
+               <div key={i} className="mb-4 p-4 bg-gray-50 dark:bg-slate-800 rounded-lg shadow-sm">
                   <p className="font-semibold">{i + 1}. {q.question}</p>
 
                   {q.options && q.options[0] !== "..." ? (

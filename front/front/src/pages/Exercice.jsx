@@ -64,109 +64,129 @@ export default function Exercices() {
     e.target.reset();
   };
 
-  return (
-    <div className="p-8 pt-[80px] max-w-6xl mx-auto">
-      {/* Bouton Ajouter */}
-      <button
-        onClick={() => setShowForm(!showForm)}
-        className="bg-blue-600 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-700 transition mb-4"
+return (
+  <div className="p-8 pt-[80px]  mx-auto min-h-screen bg-gray-50 dark:bg-slate-950 transition-colors duration-300">
+
+    {/* Bouton Ajouter */}
+    <button
+      onClick={() => setShowForm(!showForm)}
+      className="bg-blue-600 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-700 transition mb-4"
+    >
+      ➕ Ajouter un exercice
+    </button>
+
+    {/* Formulaire */}
+    {showForm && (
+      <form
+        onSubmit={handleAddExercice}
+        className="p-6 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl shadow-lg mb-10 transition"
       >
-        ➕ Ajouter un exercice
-      </button>
-
-      {/* Formulaire */}
-      {showForm && (
-        <form
-          onSubmit={handleAddExercice}
-          className="p-6 bg-white border border-gray-300 rounded-xl shadow mb-10"
+        <select
+          value={selectedCours}
+          onChange={(e) => setSelectedCours(e.target.value)}
+          className="w-full p-2 border rounded-lg mb-3 bg-white dark:bg-slate-800 text-gray-800 dark:text-white"
         >
-          <select
-            value={selectedCours}
-            onChange={(e) => setSelectedCours(e.target.value)}
-            className="w-full p-2 border rounded-lg mb-3"
+          {coursList.map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.titre}
+            </option>
+          ))}
+        </select>
+
+        <input
+          name="titre"
+          placeholder="Titre"
+          required
+          className="w-full p-2 border rounded-lg mb-3 bg-white dark:bg-slate-800 text-gray-800 dark:text-white"
+        />
+
+        <textarea
+          name="consigne"
+          placeholder="Consigne"
+          required
+          className="w-full p-2 border rounded-lg mb-3 bg-white dark:bg-slate-800 text-gray-800 dark:text-white"
+        />
+
+        <input type="file" name="fichier" className="mb-3 text-gray-700 dark:text-gray-300" />
+
+        <div className="flex justify-end gap-3">
+          <button
+            type="button"
+            onClick={() => setShowForm(false)}
+            className="px-4 py-2 bg-gray-200 dark:bg-slate-700 text-gray-800 dark:text-white rounded-lg hover:opacity-80"
           >
-            {coursList.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.titre}
-              </option>
-            ))}
-          </select>
+            Annuler
+          </button>
 
-          <input
-            name="titre"
-            placeholder="Titre"
-            required
-            className="w-full p-2 border rounded-lg mb-3"
-          />
-          <textarea
-            name="consigne"
-            placeholder="Consigne"
-            required
-            className="w-full p-2 border rounded-lg mb-3"
-          />
-          <input type="file" name="fichier" className="mb-3" />
+          <button
+            type="submit"
+            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+          >
+            Enregistrer
+          </button>
+        </div>
+      </form>
+    )}
 
-          <div className="flex justify-end gap-3">
-            <button
-              type="button"
-              onClick={() => setShowForm(false)}
-              className="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300"
+    {/* Title */}
+    <h2 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">
+      📘 Exercices par cours
+    </h2>
+
+    {/* Cards */}
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {coursList.map((cours) => (
+        <div
+          key={cours.id}
+          className="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-700 shadow-lg rounded-xl p-4 transition hover:shadow-2xl"
+        >
+          <h3 className="text-xl font-semibold text-blue-600 mb-3">
+            {cours.titre}
+          </h3>
+
+          {exosByCours[cours.id]?.length > 0 ? (
+            <Swiper
+              modules={[Navigation]}
+              navigation
+              spaceBetween={10}
+              slidesPerView={1}
             >
-              Annuler
-            </button>
-            <button
-              type="submit"
-              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
-            >
-              Enregistrer
-            </button>
-          </div>
-        </form>
-      )}
+              {exosByCours[cours.id].map((exo) => (
+                <SwiperSlide key={exo.id}>
+                  <div className="bg-blue-50 dark:bg-slate-800 p-4 rounded-lg transition">
+                    <h4 className="font-bold text-lg text-gray-900 dark:text-white">
+                      {exo.titre}
+                    </h4>
 
-      {/* Cards avec carousel */}
-      <h2 className="text-2xl font-bold mb-4">📘 Exercices par cours</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {coursList.map((cours) => (
-          <div key={cours.id} className="bg-white border shadow rounded-xl p-4">
-            <h3 className="text-xl font-semibold text-blue-600 mb-3">
-              {cours.titre}
-            </h3>
+                    <p className="text-gray-700 dark:text-gray-300 mt-1">
+                      {exo.consigne}
+                    </p>
 
-            {exosByCours[cours.id]?.length > 0 ? (
-              <Swiper
-                modules={[Navigation]} // ✅ Navigation ici
-                navigation
-                spaceBetween={10}
-                slidesPerView={1}
-              >
-                {exosByCours[cours.id].map((exo) => (
-                  <SwiperSlide key={exo.id}>
-                    <div className="bg-blue-50 p-4 rounded-lg">
-                      <h4 className="font-bold text-lg">{exo.titre}</h4>
-                      <p className="text-gray-700 mt-1">{exo.consigne}</p>
-                      {exo.fichier && (
-                        <a
-                          href={`http://127.0.0.1:8000${exo.fichier}`}
-                          className="text-blue-500 underline block mt-2"
-                          target="_blank"
-                        >
-                          📄 Télécharger fichier
-                        </a>
-                      )}
-                      <p className="text-sm text-gray-500 mt-2">
-                        {new Date(exo.date_pub).toLocaleDateString()}
-                      </p>
-                    </div>
-                  </SwiperSlide>
-                ))}
-              </Swiper>
-            ) : (
-              <p className="text-gray-500 text-center py-4">Aucun exercice</p>
-            )}
-          </div>
-        ))}
-      </div>
+                    {exo.fichier && (
+                      <a
+                        href={`http://127.0.0.1:8000${exo.fichier}`}
+                        className="text-blue-500 underline block mt-2"
+                        target="_blank"
+                      >
+                        📄 Télécharger fichier
+                      </a>
+                    )}
+
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                      {new Date(exo.date_pub).toLocaleDateString()}
+                    </p>
+                  </div>
+                </SwiperSlide>
+              ))}
+            </Swiper>
+          ) : (
+            <p className="text-gray-500 dark:text-gray-400 text-center py-4">
+              Aucun exercice
+            </p>
+          )}
+        </div>
+      ))}
     </div>
-  );
+  </div>
+);
 }

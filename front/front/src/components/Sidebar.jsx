@@ -23,16 +23,26 @@ export default function Sidebars({ setIsAuth }) {
   notifications.filter(n => !n.lu).length
 );
 
-  const [dark, setDark] = useState(() =>
-    localStorage.getItem("theme") === "dark"
-  );
+const [dark, setDark] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [showAvatarMenu, setShowAvatarMenu] = useState(false);
 
   const location = useLocation();
   const navigate = useNavigate(); // <-- navigation pour logout
 
-  const toggleDarkMode = () => setDark((d) => !d);
+ const toggleDarkMode = () => {
+  setDark(prev => {
+    const newDark = !prev;
+
+    localStorage.setItem("theme", newDark ? "dark" : "light");
+
+    const root = document.documentElement;
+    if (newDark) root.classList.add("dark");
+    else root.classList.remove("dark");
+
+    return newDark;
+  });
+};
 const p=localStorage.getItem("photo")
 
   const [user, setUser] = useState(() => {
@@ -44,16 +54,21 @@ const p=localStorage.getItem("photo")
   };
 });
 
-  useEffect(() => {
-    const root = document.documentElement;
-    if (dark) {
-      root.classList.add("dark");
-      localStorage.setItem("theme", "dark");
-    } else {
-      root.classList.remove("dark");
-      localStorage.setItem("theme", "light");
-    }
-  }, [dark]);
+useEffect(() => {
+  const savedTheme = localStorage.getItem("theme");
+
+  const isDark = savedTheme === "dark";
+
+  setDark(isDark);
+
+  const root = document.documentElement;
+
+  if (isDark) {
+    root.classList.add("dark");
+  } else {
+    root.classList.remove("dark");
+  }
+}, []);
 // Ajoute ceci dans Sidebars.jsx, à la place de ton useEffect existant pour le WebSocket
 
 const socketRef = useRef(null);
@@ -139,7 +154,7 @@ const socketRef = useRef(null);
         <div
           className="max-w-7xl mx-auto flex items-center justify-between gap-4 py-3 px-4
           backdrop-blur-xl transition-colors duration-300
-          bg-white/70 dark:bg-slate-900/90 text-slate-900 dark:text-white
+          bg-white dark:bg-slate-900 text-slate-900 dark:text-white
           shadow-lg border-b border-slate-200 dark:border-slate-700"
         >
           {/* Logo */}

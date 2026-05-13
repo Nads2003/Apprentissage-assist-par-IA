@@ -4,6 +4,7 @@ import pdf from "../assets/pdf.png";
 import { Transition } from "@headlessui/react";
 import { Heart } from "lucide-react";
 import Sidebars from "../components/Sidebar";
+import Footer from "./footer";
 
 export default function FavorisPage({ setIsAuth }) {
   const [favoris, setFavoris] = useState([]);
@@ -55,78 +56,83 @@ export default function FavorisPage({ setIsAuth }) {
     }
   };
 
-  return (
-    <div className="container mx-auto p-6">
-         
-      <h1 className="text-3xl font-bold text-indigo-700 text-center mb-8">
-        ❤️ Mes Cours Favoris
-      </h1>
+return (
+  <div className="container mx-auto p-6 bg-white dark:bg-slate-950 text-slate-900 dark:text-white">
+       
+    <h1 className="text-3xl font-bold text-indigo-700 dark:text-indigo-400 text-center mb-8">
+      ❤️ Mes Cours Favoris
+    </h1>
 
-      {error && <p className="text-red-500 text-center mb-4">Erreur : {error}</p>}
+    {error && (
+      <p className="text-red-500 text-center mb-4">
+        Erreur : {error}
+      </p>
+    )}
 
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {favoris.map((c) => (
-          <div
-            key={c.id}
-            className="relative bg-white/30 backdrop-blur-md rounded-2xl shadow-2xl hover:shadow-2xl transition-transform transform hover:-translate-y-3 hover:scale-105 duration-300 overflow-hidden"
-          >
-            <img
-              src={pdf}
-              alt="PDF"
-              className="w-full h-48 object-contain bg-gray-100 rounded-t-2xl p-4"
-            />
+    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      {favoris.map((c) => (
+        <div
+          key={c.id}
+          className="relative bg-white dark:bg-slate-900/70 backdrop-blur-md rounded-2xl shadow-2xl hover:shadow-2xl transition-transform transform hover:-translate-y-3 hover:scale-105 duration-300 overflow-hidden border border-gray-100 dark:border-slate-700"
+        >
+          <img
+            src={pdf}
+            alt="PDF"
+            className="w-full h-48 object-contain bg-gray-100 dark:bg-slate-800 rounded-t-2xl p-4"
+          />
 
-            <div className="p-4">
-              <h2 className="text-lg font-semibold text-indigo-700 mb-2">
-                {c.titre}
-              </h2>
-              <p className="text-gray-600 text-sm line-clamp-3 mb-3">
-                {c.description || "Aucune description fournie."}
-              </p>
+          <div className="p-4">
+            <h2 className="text-lg font-semibold text-indigo-700 dark:text-indigo-400 mb-2">
+              {c.titre}
+            </h2>
 
-              <div className="text-sm text-gray-500 mb-3">
-                <p>👨‍🏫 {c.professeur?.compte?.username || "Professeur inconnu"}</p>
-                <p>🏛️ {c.mention?.nom}</p>
-                <p>🎓 {c.niveau?.nom}</p>
-              </div>
+            <p className="text-gray-600 dark:text-gray-300 text-sm line-clamp-3 mb-3">
+              {c.description || "Aucune description fournie."}
+            </p>
 
-              <div className="flex justify-between items-center">
-                {c.fichier ? (
-                  
-                  <button
-                    onClick={() =>
-                      openModal(`http://localhost:8000/api/pdf/${c.id}/`)
-                    }
-                    className="mt-2 w-full bg-blue-600 text-white py-2 rounded-xl hover:bg-blue-700 transition text-sm font-semibold flex items-center justify-center gap-2 shadow-md hover:shadow-lg"
-                  >
-                    📄 Voir le PDF
-                  </button>
-                 
-                  
-                ) : (
-                  <p className="text-center text-gray-400 text-sm italic flex-1">
-                    Aucun fichier
-                  </p>
-                )}
-                 <button
-  onClick={() => window.location.href = `/cours/${c.id}`}
-  className="mt-2 w-full bg-blue-600 text-white py-2 rounded-xl hover:bg-blue-700 transition text-sm font-semibold flex items-center justify-center gap-2 shadow-md hover:shadow-lg"
->
-  📘 Détails du cours
-</button>
+            <div className="text-sm text-gray-500 dark:text-gray-400 mb-3">
+              <p>👨‍🏫 {c.professeur?.compte?.username || "Professeur inconnu"}</p>
+              <p>🏛️ {c.mention?.nom}</p>
+              <p>🎓 {c.niveau?.nom}</p>
+            </div>
 
+            <div className="flex justify-between items-center">
+
+              {c.fichier ? (
                 <button
-                  onClick={() => removeFavori(c.id)}
-                  className="p-2 rounded-full bg-red-100 text-red-600 transition"
-                  title="Retirer des favoris"
+                  onClick={() =>
+                    openModal(`http://localhost:8000/api/pdf/${c.id}/`)
+                  }
+                  className="mt-2 w-full bg-blue-600 text-white py-2 rounded-xl hover:bg-blue-700 transition text-sm font-semibold flex items-center justify-center gap-2 shadow-md hover:shadow-lg"
                 >
-                  <Heart size={22} fill="red" strokeWidth={1.5} />
+                  📄 Voir le PDF
                 </button>
-              </div>
+              ) : (
+                <p className="text-center text-gray-400 dark:text-gray-500 text-sm italic flex-1">
+                  Aucun fichier
+                </p>
+              )}
+
+              <button
+                onClick={() => window.location.href = `/cours/${c.id}`}
+                className="mt-2 w-full bg-blue-600 text-white py-2 rounded-xl hover:bg-blue-700 transition text-sm font-semibold flex items-center justify-center gap-2 shadow-md hover:shadow-lg"
+              >
+                📘 Détails du cours
+              </button>
+
+              <button
+                onClick={() => removeFavori(c.id)}
+                className="p-2 rounded-full bg-red-100 dark:bg-red-900/30 text-red-600 transition"
+                title="Retirer des favoris"
+              >
+                <Heart size={22} fill="red" strokeWidth={1.5} />
+              </button>
+
             </div>
           </div>
-        ))}
-      </div>
+        </div>
+      ))}
+    </div>
 
       {/* MODAL PDF */}
       {pdfUrl && (
@@ -167,6 +173,7 @@ export default function FavorisPage({ setIsAuth }) {
           </div>
         </Transition>
       )}
+      <Footer />
     </div>
   );
 }

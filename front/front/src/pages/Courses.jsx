@@ -6,7 +6,7 @@ import { Transition } from "@headlessui/react";
 import pdfIcon from "../assets/pdf.png";
 
 export default function Cours() {
-  const [coursEdit, setCoursEdit] = useState(null); // Pour modifier
+  const [coursEdit, setCoursEdit] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [mentions, setMentions] = useState([]);
   const [niveaux, setNiveaux] = useState([]);
@@ -43,27 +43,25 @@ export default function Cours() {
     loadData();
   }, []);
 
- 
-
-  // Ouvrir modal pour édition
   const openEditModal = (cours) => {
     setCoursEdit(cours);
     setModalOpen(true);
   };
 
-  // Ajouter ou modifier cours
   const saveCours = async (formDataToSend) => {
     try {
       let res;
+
       if (coursEdit) {
-        // Modification
-        res = await fetch(`http://127.0.0.1:8000/api/updated/${coursEdit.id}/`, {
-          method: "PUT",
-          headers: { Authorization: `Bearer ${token}` },
-          body: formDataToSend,
-        });
+        res = await fetch(
+          `http://127.0.0.1:8000/api/updated/${coursEdit.id}/`,
+          {
+            method: "PUT",
+            headers: { Authorization: `Bearer ${token}` },
+            body: formDataToSend,
+          }
+        );
       } else {
-        // Ajout
         res = await fetch("http://127.0.0.1:8000/api/cours/", {
           method: "POST",
           headers: { Authorization: `Bearer ${token}` },
@@ -91,7 +89,6 @@ export default function Cours() {
     }
   };
 
-  // Supprimer cours
   const supprimerCours = async (id) => {
     if (!window.confirm("Voulez-vous vraiment supprimer ce cours ?")) return;
 
@@ -109,7 +106,6 @@ export default function Cours() {
     toast.success("📚 Cours supprimé avec succès !");
   };
 
-  // Ouvrir modal PDF
   const openModal = (url) => {
     setLoadingPdf(true);
     setPdfUrl(encodeURI(url));
@@ -123,21 +119,25 @@ export default function Cours() {
 
   return (
     <div className="p-6 max-w-6xl mx-auto pt-24">
-      {/* HEADER */}
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-indigo-700">📚 Mes Cours</h1>
+
+      {/* HEADER MODERNE */}
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-3xl font-extrabold text-indigo-600 drop-shadow">
+          📚 Mes Cours
+        </h1>
+
         <button
           onClick={() => {
-            setCoursEdit(null); // Reset pour ajout
+            setCoursEdit(null);
             setModalOpen(true);
           }}
-          className="bg-indigo-600 text-white px-4 py-2 rounded-xl shadow hover:bg-indigo-700"
+          className="bg-indigo-600 text-white px-5 py-2 rounded-xl shadow-lg hover:bg-indigo-700 transition"
         >
           ➕ Nouveau Cours
         </button>
       </div>
 
-      {/* Modal PDF */}
+      {/* PDF MODAL */}
       {pdfUrl && (
         <Transition
           show={isOpen}
@@ -152,19 +152,21 @@ export default function Cours() {
             <div className="bg-white rounded-2xl shadow-2xl w-[90%] h-[90%] relative overflow-hidden">
               <button
                 onClick={closeModal}
-                className="absolute top-3 right-3 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-full text-sm shadow-lg transition"
+                className="absolute top-3 right-3 bg-red-500 text-white px-4 py-2 rounded-full shadow hover:bg-red-600"
               >
                 ✖
               </button>
+
               {loadingPdf && (
                 <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/80 z-10">
-                  <div className="border-t-4 border-indigo-600 rounded-full w-12 h-12 animate-spin"></div>
-                  <p className="mt-3 text-indigo-600 font-medium">Chargement du PDF...</p>
+                  <div className="animate-spin h-10 w-10 border-4 border-indigo-600 border-t-transparent rounded-full"></div>
+                  <p className="mt-3 text-indigo-600">Chargement du PDF...</p>
                 </div>
               )}
+
               <iframe
                 src={pdfUrl}
-                className="w-full h-full rounded-2xl"
+                className="w-full h-full"
                 onLoad={() => setLoadingPdf(false)}
               />
             </div>
@@ -176,38 +178,40 @@ export default function Cours() {
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {cours.map((c) => (
           <div
-  key={c.id}
-  className="relative bg-white border border-gray-300 rounded-xl hover:border-indigo-500 transition duration-300 p-2"
->
-
+            key={c.id}
+            className="group relative bg-white/80 backdrop-blur-md border border-gray-200 rounded-2xl shadow-md hover:shadow-xl transition transform hover:-translate-y-2"
+          >
+            {/* IMAGE */}
             <div className="relative">
               <img
                 src={pdfIcon}
-                className="w-full h-48 object-contain bg-gray-100 p-4"
+                className="w-full h-48 object-contain bg-gray-100 p-4 rounded-t-2xl"
               />
 
+              {/* ACTIONS */}
               <button
                 onClick={() => supprimerCours(c.id)}
-                className="absolute top-3 right-3 bg-red-100 hover:bg-red-200 p-2 rounded-full shadow-lg transition"
-                title="Supprimer le cours"
+                className="absolute top-3 right-3 bg-red-100 hover:bg-red-200 p-2 rounded-full"
               >
-                <Trash2 size={20} className="text-red-600" />
+                <Trash2 className="text-red-600" size={18} />
               </button>
 
               <button
                 onClick={() => openEditModal(c)}
-                className="absolute top-3 left-3 bg-yellow-100 hover:bg-yellow-200 p-2 rounded-full shadow-lg transition"
-                title="Modifier le cours"
+                className="absolute top-3 left-3 bg-yellow-100 hover:bg-yellow-200 p-2 rounded-full"
               >
-                <Edit size={20} className="text-yellow-600" />
+                <Edit className="text-yellow-600" size={18} />
               </button>
             </div>
 
-            <div className="p-5 bg-slate-900 rounded-2xl text-white flex flex-col h-56 justify-between">
-              <h2 className="text-lg font-bold mb-2">{c.titre}</h2>
-              <p className="text-sm line-clamp-3">{c.description}</p>
+            {/* CONTENT */}
+            <div className="p-5 bg-slate-900 text-white rounded-b-2xl flex flex-col justify-between h-56">
+              <h2 className="text-lg font-bold">{c.titre}</h2>
+              <p className="text-sm text-gray-300 line-clamp-3">
+                {c.description}
+              </p>
 
-              <div className="flex flex-wrap gap-2 text-xs font-semibold mt-3">
+              <div className="flex flex-wrap gap-2 text-xs mt-2">
                 <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full">
                   🏛️ {c.mention?.nom}
                 </span>
@@ -215,14 +219,16 @@ export default function Cours() {
                   🎓 {c.niveau?.nom}
                 </span>
               </div>
-<div className="flex flex-col mt-2 text-sm text-gray-200">
-  <span>📅 Début : {new Date(c.date_debut).toLocaleString()}</span>
-  <span>⏰ Fin : {new Date(c.date_fin).toLocaleString()}</span>
-</div>
+
+              <div className="text-xs text-gray-300 mt-2">
+                📅 {new Date(c.date_debut).toLocaleString()} → {new Date(c.date_fin).toLocaleString()}
+              </div>
 
               <button
-                onClick={() => openModal(`http://localhost:8000/api/pdf/${c.id}/`)}
-                className="mt-3 w-full bg-indigo-600 text-white py-2 rounded-xl hover:bg-indigo-700 transition text-sm shadow-md"
+                onClick={() =>
+                  openModal(`http://localhost:8000/api/pdf/${c.id}/`)
+                }
+                className="mt-3 bg-indigo-600 hover:bg-indigo-700 py-2 rounded-xl text-sm shadow"
               >
                 📄 Voir le PDF
               </button>
