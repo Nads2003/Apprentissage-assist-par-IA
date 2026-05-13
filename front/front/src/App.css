@@ -1,0 +1,16 @@
+@import "tailwindcss";
+
+.avatar{
+  background-color: brown;
+}
+h1{
+  color: blue;
+}
+.intro{
+margin-top: 50px;
+border-radius: 10px;
+}
+.rounded-circle{
+  width: 50px;
+}
+

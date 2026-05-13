@@ -1,0 +1,5 @@
+etudiant
+sambatra@gmail.com  mdp:fifah
+professeur 
+rabetafika@gmail.com mdp:azerty
+https://console.groq.com/keys   key de groq
