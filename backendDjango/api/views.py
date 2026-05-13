@@ -4,7 +4,6 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenObtainPairView
 from .models import Cours, Compte
 from .serializers import CoursSerializer, CompteSerializer, MyTokenObtainPairSerializer,ExplicationCoursSerializer
-import requests
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 from rest_framework.exceptions import PermissionDenied
@@ -15,25 +14,29 @@ from asgiref.sync import async_to_sync
 from .serializers import FavoriSerializer
 from rest_framework.exceptions import PermissionDenied
 from django.http import FileResponse, Http404
-from django.conf import settings
 import os
 from rest_framework.permissions import IsAuthenticated
 import json
 import re
+from rest_framework import viewsets
+from .models import Exercice
+from .serializers import ExerciceSerializer
+from rest_framework.permissions import IsAuthenticated
 #groq pour IA quiz
 from groq import Groq
 from rest_framework import status
 from .models import ConversationSession
 from .models import Mention, Niveau, Professeur, Cours
 from .serializers import MentionSerializer, NiveauSerializer, ProfesseurSerializer, CoursSerializer
-from django.conf import settings
-#openai pour chat IA
-from openai import OpenAI
 from .models import MessageAI, ConversationSession
 import uuid
 from django.core.exceptions import PermissionDenied
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from .models import Notification, Etudiant
+from .serializers import NotificationSerializer
 # 🔹 Création de compte
 class CreerCompter(generics.CreateAPIView):
     queryset = Compte.objects.all()
@@ -65,7 +68,7 @@ class ProfesseurListView(generics.ListAPIView):
     queryset = Professeur.objects.select_related('compte').all()
     serializer_class = ProfesseurSerializer
     permission_classes = [permissions.IsAuthenticated]
-
+# 🔹 Liste et création de cours (professeurs voient leurs cours, étudiants voient les cours de leur mention/niveau  )
 class CoursListCreateView(generics.ListCreateAPIView):
     serializer_class = CoursSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -97,17 +100,11 @@ class CoursListCreateView(generics.ListCreateAPIView):
      else:
         raise PermissionDenied("Seuls les professeurs peuvent créer un cours.")
 
-
 #suppression d'un cours
-
-
 class CoursDeleteView(generics.RetrieveDestroyAPIView):
     queryset = Cours.objects.all()
     serializer_class = CoursSerializer
     permission_classes = [permissions.IsAuthenticated]
-
-
-
 class CoursDeleteView(generics.RetrieveDestroyAPIView):
     queryset = Cours.objects.all()
     serializer_class = CoursSerializer
@@ -157,13 +154,7 @@ class CoursDeleteView(generics.RetrieveDestroyAPIView):
             )
 
         return super().delete(request, *args, **kwargs)
-
-
-from rest_framework import viewsets
-from .models import Exercice
-from .serializers import ExerciceSerializer
-from rest_framework.permissions import IsAuthenticated
-
+# 🔹 CRUD Exercices liés à un cours
 class ExerciceViewSet(viewsets.ModelViewSet):
     queryset = Exercice.objects.all()
     serializer_class = ExerciceSerializer
@@ -174,9 +165,11 @@ class ExerciceViewSet(viewsets.ModelViewSet):
         if cours_id:
             return Exercice.objects.filter(cours_id=cours_id)
         return Exercice.objects.all()
+    # 🔹 CRUD Explications liées à un cours
 class ExplicationCoursViewSet(viewsets.ModelViewSet):
     queryset = ExplicationCours.objects.all()
     serializer_class = ExplicationCoursSerializer
+    #permission_classes = [IsAuthenticated]
 class CoursUpdateView(generics.RetrieveUpdateAPIView):
     queryset = Cours.objects.all()
     serializer_class = CoursSerializer
@@ -192,7 +185,7 @@ class CoursUpdateView(generics.RetrieveUpdateAPIView):
 
         return super().update(request, *args, **kwargs)
 
-
+# 🔹 Affichage d'un PDF lié à un cours
 def media_pdf_view(request, pk):
     try:
         cours = Cours.objects.get(pk=pk)
@@ -206,8 +199,6 @@ def media_pdf_view(request, pk):
     except Cours.DoesNotExist:
         raise Http404("Cours introuvable.")
     
-
-
 # Ajouter un cours aux favoris
 class FavoriCreateView(APIView):
     permission_classes = [permissions.IsAuthenticated]
@@ -233,7 +224,7 @@ class FavoriCreateView(APIView):
 
         serializer = FavoriSerializer(favori)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
-
+# Retirer un cours des favoris
 class FavoriDeleteView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
@@ -260,7 +251,7 @@ class FavoriListView(generics.ListAPIView):
         return Favori.objects.none()
 
 client = Groq(api_key= os.getenv("GROQ_API_KEY"))
-
+# 🔹 Génération de quiz IA à partir d'un cours
 class GenerateQuizIAFree(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -306,20 +297,19 @@ class GenerateQuizIAFree(APIView):
 
         return Response({"quiz": quiz, "warning": False}, status=200)
 
-
-
 # 🔵 CHAT AI VIEW
 class ChatAIView(APIView):
     def post(self, request):
         user = request.user
+
         if not hasattr(user, "etudiant"):
             return Response({"error": "Utilisateur non autorisé"}, status=403)
-        etudiant = user.etudiant
 
+        etudiant = user.etudiant
         user_message = request.data.get("message")
         session_id = request.data.get("session_id")
 
-        # ⚡ Créer nouvelle session si aucune ID n'est envoyée
+        # Création session
         if not session_id:
             session_id = str(uuid.uuid4())
             session = ConversationSession.objects.create(
@@ -332,12 +322,12 @@ class ChatAIView(APIView):
                 owner=etudiant
             )
 
-        # ⚡ Mettre un titre automatique si c'est le premier message
+        # Titre automatique
         if session.title == "Nouvelle discussion":
             session.title = user_message[:40]
             session.save()
 
-        # ⚡ Sauvegarde du message utilisateur
+        # Sauvegarder message utilisateur
         MessageAI.objects.create(
             session=session,
             sender="user",
@@ -345,21 +335,35 @@ class ChatAIView(APIView):
         )
 
         try:
-            client = OpenAI(api_key=settings.OPENAI_API_KEY)
-            # Récupérer l'historique
+            client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+
+            # Historique
             history = MessageAI.objects.filter(session=session).order_by("timestamp")
+
             messages = [
-                {"role": "user" if m.sender == "user" else "assistant", "content": m.content} for m in history
+                {
+                    "role": "user" if m.sender == "user" else "assistant",
+                    "content": m.content
+                }
+                for m in history
             ]
 
-            # Appel modèle OpenAI
+            # Appel Groq
             response = client.chat.completions.create(
-                model="gpt-4o-mini",
-                messages=[{"role": "system", "content": "Tu es un assistant utile."}, *messages]
+                model="llama-3.1-8b-instant",
+                messages=[
+                    {
+                        "role": "system",
+                        "content": "Tu es un assistant pédagogique utile pour les étudiants."
+                    },
+                    *messages
+                ],
+                temperature=0.7
             )
+
             bot_reply = response.choices[0].message.content
 
-            # Sauvegarde réponse IA
+            # Sauvegarder réponse IA
             MessageAI.objects.create(
                 session=session,
                 sender="assistant",
@@ -373,9 +377,8 @@ class ChatAIView(APIView):
             })
 
         except Exception as e:
-            print("❌ ERREUR OPENAI :", e)
+            print("❌ ERREUR GROQ :", e)
             return Response({"error": str(e)}, status=500)
-
 # 🔵 LISTE SESSIONS (historique)
 class ChatSessionsView(APIView):
     def get(self, request):
@@ -415,7 +418,7 @@ class ChatMessagesView(APIView):
                 "content": m.content,
             } for m in messages
         ])
-
+# 🔵 SUPPRIMER UNE SESSION
 class ChatSessionDeleteView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -429,7 +432,7 @@ class ChatSessionDeleteView(APIView):
             return Response({"detail": "Session supprimée."}, status=status.HTTP_200_OK)
         except ConversationSession.DoesNotExist:
             return Response({"error": "Session introuvable"}, status=status.HTTP_404_NOT_FOUND)
-
+# 🔹 Mise à jour du profil (étudiant ou professeur)
 class UpdateProfileView(generics.UpdateAPIView):
     serializer_class = CompteSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -441,12 +444,7 @@ class UpdateProfileView(generics.UpdateAPIView):
         kwargs['partial'] = True # <-- permet update partiel
         return super().get_serializer(*args, **kwargs)
 
-# views.py
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
-from .models import Notification, Etudiant
-from .serializers import NotificationSerializer
-
+# Endpoint pour récupérer les notifications d'un étudiant
 @api_view(['GET'])
 def get_notifications(request):
     user_id = request.user.id
@@ -457,6 +455,7 @@ def get_notifications(request):
         return Response(serializer.data)
     except Etudiant.DoesNotExist:
         return Response([])
+    #detail d'un cours avec explications et exercices associés
 class CoursDetailView(APIView):
     permission_classes = [IsAuthenticated]
 
